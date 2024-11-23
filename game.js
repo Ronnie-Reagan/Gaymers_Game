@@ -1,7 +1,7 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-canvas.width = 800;
-canvas.height = 600;
+canvas.width = 607.5;
+canvas.height = 1080;
 
 const shipImg = new Image();
 const projectileImg = new Image();
@@ -10,7 +10,7 @@ shipImg.src = 'assets/ship.png';
 projectileImg.src = 'assets/projectile.png';
 enemyImg.src = 'assets/enemy.png';
 
-const ship = { x: canvas.width / 2, y: canvas.height - 100, speed: 300, width: 0, height: 0 };
+const ship = { x: canvas.width / 2, y: canvas.height - 150, speed: 300, width: 0, height: 0 };
 let projectiles = [];
 let enemies = [];
 let level = 1;
@@ -47,8 +47,8 @@ function spawnEnemies(deltaTime) {
 
 function update(deltaTime) {
   if (gameState === "playing") {
-    if (keys["ArrowLeft"]) ship.x = Math.max(0, ship.x - ship.speed * deltaTime);
-    if (keys["ArrowRight"]) ship.x = Math.min(canvas.width - ship.width, ship.x + ship.speed * deltaTime);
+    if (keys["ArrowLeft"]) ship.x = Math.max(-60, ship.x - ship.speed * deltaTime);
+    if (keys["ArrowRight"]) ship.x = Math.min(canvas.width - ship.width + 60, ship.x + ship.speed * deltaTime);
 
     projectiles = projectiles.filter(proj => proj.y > -proj.height);
     projectiles.forEach(proj => proj.y -= proj.speed * deltaTime);
@@ -125,10 +125,10 @@ document.addEventListener("keydown", e => {
   if (e.key === " ") {
     if (gameState === "playing") {
       projectiles.push({
-        x: ship.x + ship.width / 2 - 5,
+        x: ship.x + ship.width / 2 - 45,
         y: ship.y,
-        width: 10,
-        height: 20,
+        width: 60,
+        height: 120,
         speed: 500,
       });
     }
