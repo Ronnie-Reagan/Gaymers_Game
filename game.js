@@ -10,7 +10,7 @@ shipImg.src = 'assets/ship.png';
 projectileImg.src = 'assets/projectile.png';
 enemyImg.src = 'assets/enemy.png';
 
-const ship = { x: canvas.width / 2, y: canvas.height - 150, speed: 300, width: 0, height: 0 };
+const ship = { x: canvas.width / 2, y: canvas.height - 150, speed: 420, width: 0, height: 0 };
 let projectiles = [];
 let enemies = [];
 let level = 1;
@@ -39,15 +39,16 @@ function spawnEnemies(deltaTime) {
       x: Math.random() * (canvas.width - 50),
       y: -50,
       speed: 50 + level * 10,
-      width: 50,
-      height: 50,
+      width: 100,
+      height: 100,
     });
   }
 }
 
 function update(deltaTime) {
   if (gameState === "playing") {
-    if (keys["ArrowLeft"]) ship.x = Math.max(-60, ship.x - ship.speed * deltaTime);
+    if (keys["Escape"]) gameState  = "gameOver";
+    if (keys["ArrowLeft"]) ship.x = Math.max(-30, ship.x - ship.speed * deltaTime);
     if (keys["ArrowRight"]) ship.x = Math.min(canvas.width - ship.width + 60, ship.x + ship.speed * deltaTime);
 
     projectiles = projectiles.filter(proj => proj.y > -proj.height);
@@ -79,7 +80,6 @@ function update(deltaTime) {
 
     if (score >= level * 10) {
       level++;
-      enemies = [];
     }
 
     spawnEnemies(deltaTime);
@@ -106,8 +106,10 @@ function draw() {
   } else if (gameState === "gameOver") {
     ctx.fillStyle = "white";
     ctx.font = "30px Arial";
-    ctx.fillText("Game Over! Press Enter to Retry", canvas.width / 2 - 200, canvas.height / 2);
-    ctx.fillText(`Final Score: ${score}`, canvas.width / 2 - 100, canvas.height / 2 + 50);
+    ctx.fillText("Game Over!", canvas.width / 2 - 90, canvas.height / 2 - 50);
+    ctx.fillText(`Final Score: ${score}`, canvas.width / 2 - 100, canvas.height / 2 + 100);
+    ctx.fillText(`Final Level: ${level}`, canvas.width / 2 - 100, canvas.height / 2 + 150);
+    ctx.fillText(`Press Enter to Restart`, canvas.width / 2 - 150, canvas.height / 2 + 250);
   }
 }
 
@@ -125,11 +127,11 @@ document.addEventListener("keydown", e => {
   if (e.key === " ") {
     if (gameState === "playing") {
       projectiles.push({
-        x: ship.x + ship.width / 2 - 45,
-        y: ship.y,
+        x: ship.x + ship.width / 2 - 42,
+        y: ship.y - (ship.height / 2),
         width: 60,
         height: 120,
-        speed: 500,
+        speed: 750,
       });
     }
   }
