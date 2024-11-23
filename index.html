@@ -3,14 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gaymer's Game</title>
+  <title>Gaymer's Game - Home</title>
   <style>
-    canvas { display: block; margin: 0 auto; background: black; }
-    body { text-align: center; color: white; font-family: Arial, sans-serif; }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    button {
+      font-size: 20px;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background: #ff6347;
+      color: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #ff4500;
+    }
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas"></canvas>
-  <script src="game.js"></script>
+  <div>
+    <h1>Welcome to Gaymer's Game</h1>
+    <p>Click the button below to start playing.</p>
+    <button onclick="location.href='game.html'">Launch Game</button>
+  </div>
 </body>
 </html>
