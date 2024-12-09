@@ -156,9 +156,28 @@ canvas.addEventListener("touchend", () => {});
 
 // Mobile tilt control
 if (window.DeviceOrientationEvent) {
-  window.addEventListener("deviceorientation", event => {
+  if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+    document.addEventListener('click', () => {
+      DeviceOrientationEvent.requestPermission()
+        .then(permissionState => {
+          if (permissionState === 'granted') {
+            window.addEventListener("deviceorientation", handleTilt);
+          }
+        }).catch(console.error);
+    }, { once: true });
+  } else {
+    window.addEventListener("deviceorientation", handleTilt);
+  }
+}
+
+function handleTilt(event) {
+  if (event.gamma === null) {
+    console.warn("Device orientation data not available");
+    tiltX = 0;
+  } else {
     tiltX = event.gamma / 30; // Normalize tilt
-  });
+    tiltX = Math.max(-1, Math.min(1, tiltX)); // Clamp tiltX between -1 and 1
+  }
 }
 
 function shootProjectile() {
