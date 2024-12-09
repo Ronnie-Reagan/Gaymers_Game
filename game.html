@@ -1,16 +1,240 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gaymer's Game</title>
-  <style>
-    canvas { display: block; margin: 0 auto; background: black; }
-    body { text-align: center; color: white; font-family: Arial, sans-serif; margin: 0; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gaymer's Game</title>
+    <style>
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: black;
+        }
+
+        body {
+            text-align: center;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+    </style>
 </head>
+
 <body>
-  <canvas id="gameCanvas"></canvas>
-  <script src="game.js"></script>
+    <p>duct tape</p> // this is a duct tape fix for the height offfset from the top of the screen/browser
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d"); // Resize canvas dynamically to fit the screen 
+        function resizeCanvas() {
+            canvas.width = window.innerWidth * 0.9;
+            canvas.height = window.innerHeight * 0.9; // Reposition ship if game is in playing state
+            if (gameState === "playing") {
+                ship.x = canvas.width / 2 - ship.width / 2; ship.y = canvas.height - ship.height - 20;
+            }
+        }
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas(); // Initial resize
+        const shipImg = new
+            Image();
+            const projectileImg = new Image();
+            const enemyImg = new Image();
+            shipImg.src = "assets/ship.png";
+        projectileImg.src = "assets/projectile.png";
+        enemyImg.src = "assets/enemy.png"; // Game variables
+        const ship = {
+            x: 0, y: 0, speed: 420, width: 0, height: 0,
+        };
+        let projectiles = [];
+        let enemies = [];
+        let level = 1;
+        let score = 0;
+        let gameState = "menu";
+        let enemySpawnTimer = 0; // Mobile tilt data
+        let tiltX = 0; // Set ship dimensions once the image loads 
+        shipImg.onload = () => {
+            ship.width = shipImg.width * 0.25;
+            ship.height = shipImg.height * 0.25;
+            ship.x = canvas.width / 2 - ship.width / 2;
+            ship.y = canvas.height - ship.height - 20;
+        };
+
+        // Reset game state
+        function resetGame() {
+            level = 1;
+            score = 0;
+            enemies = [];
+            projectiles = [];
+        }
+
+        // Spawn enemies
+        function spawnEnemies(deltaTime) {
+            enemySpawnTimer += deltaTime;
+            const spawnInterval = 1.5 / level;
+            if (enemySpawnTimer >= spawnInterval) {
+                enemySpawnTimer = 0;
+                enemies.push({
+                    x: Math.random() * (canvas.width - 50),
+                    y: -50,
+                    speed: 50 + level * 10,
+                    width: 100,
+                    height: 100,
+                });
+            }
+        }
+
+        // Update game state
+        function update(deltaTime) {
+            if (gameState === "playing") {
+                // PC movement
+                if (keys["ArrowLeft"]) ship.x = Math.max(0, ship.x - ship.speed * deltaTime);
+                if (keys["ArrowRight"]) ship.x = Math.min(canvas.width - ship.width, ship.x + ship.speed * deltaTime);
+
+                // Mobile tilt movement
+                ship.x += tiltX * ship.speed * deltaTime;
+                ship.x = Math.max(0, Math.min(canvas.width - ship.width, ship.x)); // Boundaries
+
+                // Update projectiles
+                projectiles = projectiles.filter((proj) => proj.y > -proj.height);
+                projectiles.forEach((proj) => (proj.y -= proj.speed * deltaTime));
+
+                // Update enemies
+                enemies.forEach((enemy) => (enemy.y += enemy.speed * deltaTime));
+                enemies = enemies.filter((enemy) => {
+                    if (enemy.y > canvas.height) {
+                        gameState = "gameOver";
+                        return false;
+                    }
+                    return true;
+                });
+
+                // Collision detection
+                projectiles.forEach((proj, projIndex) => {
+                    enemies.forEach((enemy, enemyIndex) => {
+                        if (
+                            proj.x < enemy.x + enemy.width &&
+                            proj.x + proj.width > enemy.x &&
+                            proj.y < enemy.y + enemy.height &&
+                            proj.y + proj.height > enemy.y
+                        ) {
+                            projectiles.splice(projIndex, 1);
+                            enemies.splice(enemyIndex, 1);
+                            score++;
+                        }
+                    });
+                });
+
+                // Level progression
+                if (score >= level * 10) {
+                    level++;
+                }
+
+                spawnEnemies(deltaTime);
+            }
+        }
+
+        // Love.draw :)
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (gameState === "menu") {
+                ctx.fillStyle = "white";
+                ctx.font = "30px Arial";
+                ctx.fillText("Press Enter or Tap to Start", canvas.width / 2 - 180, canvas.height / 2);
+            } else if (gameState === "playing") {
+                ctx.drawImage(shipImg, ship.x, ship.y, ship.width, ship.height);
+
+                projectiles.forEach((proj) => ctx.drawImage(projectileImg, proj.x, proj.y, proj.width, proj.height));
+                enemies.forEach((enemy) => ctx.drawImage(enemyImg, enemy.x, enemy.y, enemy.width, enemy.height));
+
+                ctx.fillStyle = "white";
+                ctx.font = "20px Arial";
+                ctx.fillText(`Score: ${score}`, 10, 20);
+                ctx.fillText(`Level: ${level}`, 10, 50);
+            } else if (gameState === "gameOver") {
+                ctx.fillStyle = "white";
+                ctx.font = "30px Arial";
+                ctx.fillText("Game Over!", canvas.width / 2 - 90, canvas.height / 2 - 50);
+                ctx.fillText(`Final Score: ${score}`, canvas.width / 2 - 100, canvas.height / 2 + 100);
+                ctx.fillText(`Final Level: ${level}`, canvas.width / 2 - 100, canvas.height / 2 + 150);
+                ctx.fillText("Press Enter or Tap to Restart", canvas.width / 2 - 180, canvas.height / 2 + 250);
+            }
+        }
+
+        // keys and such
+        const keys = {};
+        document.addEventListener("keydown", (e) => {
+            keys[e.key] = true;
+            if (e.key === "Enter") {
+                if (gameState === "menu") {
+                    gameState = "playing";
+                    resetGame();
+                } else if (gameState === "gameOver") {
+                    gameState = "menu";
+                }
+            }
+            if (e.key === " ") shootProjectile();
+        });
+
+        document.addEventListener("keyup", (e) => (keys[e.key] = false));
+
+        // Mobile touch controls
+        canvas.addEventListener("touchstart", () => {
+            if (gameState === "menu") {
+                gameState = "playing";
+                resetGame();
+            } else if (gameState === "playing") {
+                shootProjectile();
+            }
+        });
+
+        if (window.DeviceOrientationEvent) {
+            if (typeof DeviceOrientationEvent.requestPermission === "function") {
+                document.addEventListener("click", () => {
+                    DeviceOrientationEvent.requestPermission()
+                        .then((state) => {
+                            if (state === "granted") {
+                                window.addEventListener("deviceorientation", handleTilt);
+                            }
+                        })
+                        .catch(console.error);
+                });
+            } else {
+                window.addEventListener("deviceorientation", handleTilt);
+            }
+        }
+
+        function handleTilt(event) {
+            tiltX = event.gamma ? Math.max(-1, Math.min(1, event.gamma / 30)) : 0;
+        }
+
+        function shootProjectile() {
+            if (gameState === "playing") {
+                projectiles.push({
+                    x: ship.x + ship.width / 2 - 15,
+                    y: ship.y - 20,
+                    width: 30,
+                    height: 30,
+                    speed: 750,
+                });
+            }
+        }
+
+        // Game loop
+        let lastTime = 0;
+        function gameLoop(timestamp) {
+            const deltaTime = (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
+
+            update(deltaTime);
+            draw();
+
+            requestAnimationFrame(gameLoop);
+        }
+        gameLoop();
+
+    </script>
 </body>
+
 </html>
